@@ -8,5 +8,7 @@
              d:DesignHeight="300" d:DesignWidth="300"
              Name="serverRoot"
              Header="{Binding ElementName=serverRoot, Path=IpString}">
-    <StackPanel Background="#FFE5E5E5"/>
+    <StackPanel Background="#FFE5E5E5">
+        <local:ServerApp IconPath="ciao.jpg" ApplicationName="app1" FocusPercentage="10"/>
+    </StackPanel>
 </TabItem>
