@@ -14,6 +14,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Net;
 using System.Net.Sockets;
+using System.IO;
+using System.Xml;
 
 public delegate void DownloadCallback(string data);
 
@@ -26,7 +28,7 @@ namespace pds_client
 	{
 		int Port;
 		TcpClient Socket = new TcpClient();
-		DownloadCallback CallbackDownload;
+		Dictionary<int, ServerApp> Apps = new Dictionary<int, ServerApp>();
 
 		public string IpString
 		{
@@ -49,24 +51,40 @@ namespace pds_client
 			InitializeComponent();
 		}
 
-		public Server(string ipString, int port, DownloadCallback callbackDownload)
+		public Server(string ipString, int port)
 		{
 			IpString = ipString;
 			Port = port;
 			Socket.Connect(IPAddress.Parse(ipString), port);
-			CallbackDownload = callbackDownload;
 			InitializeComponent();
 		}
 
 		public void ScaricaAggiornamenti()
 		{
-			Byte[] Data = System.Text.Encoding.ASCII.GetBytes("");
-			while (true)
+			//while (true)
 			{
-				((NetworkStream)Socket.GetStream()).Read(Data, 0, 1024);
-				if (CallbackDownload == null)
-					throw new Exception("Callback per gestire gli aggiornamenti non registrata");
-				CallbackDownload(System.Text.Encoding.ASCII.GetString(Data));
+				StreamReader Reader =new StreamReader(Socket.GetStream());
+				string Xml="";
+				string XmlLine;
+				XmlDocument Doc = new XmlDocument();
+				while ((XmlLine = Reader.ReadLine()) != "</application_list>")
+					Xml += XmlLine;
+				Xml += XmlLine;
+				MessageBox.Show(Xml);
+				Doc.LoadXml(Xml);
+				XmlNode AppList = Doc.FirstChild;
+				string Ip = AppList.Attributes["server"].Value;
+				MessageBox.Show(Ip);
+				foreach (XmlNode App in AppList.ChildNodes)
+				{
+					int Id = Convert.ToInt32(App.Attributes["id"].Value);
+					string Operation = App.Attributes["operation"].Value;
+					if (!Apps.ContainsKey(Id) && Operation == "add")
+					{
+						Apps[Id] = new ServerApp("", App.FirstChild.FirstChild.Value, "10%");
+						appsList.Children.Add(Apps[Id]);
+					}
+				}
 			}
 		}
 	}

@@ -23,7 +23,6 @@ namespace pds_client
 	public partial class MainWindow : Window
 	{
 		private Dictionary<string, Server> Servers = new Dictionary<string, Server>();
-		private string aggiornamenti=null;
 
 		public MainWindow()
 		{
@@ -34,22 +33,20 @@ namespace pds_client
 		{
 			try
 			{
-				Server S = new Server(textBox.Text, 1993, new DownloadCallback(UsaAggiornamenti));
+				Server S = new Server(textBox.Text, 1993);
 				Servers.Add(textBox.Text, S);
-				Thread Downloader = new Thread(S.ScaricaAggiornamenti);
-				Downloader.Start(aggiornamenti);
+				//Thread Downloader = new Thread(S.ScaricaAggiornamenti);
+				//Downloader.SetApartmentState(ApartmentState.STA);
+				//Downloader.Start();
+				S.ScaricaAggiornamenti();
 				MessageBox.Show("Connessione riuscita");
                 serverList.Items.Add(S);
+				S.Focus();
 			}
 			catch (Exception exception)
 			{
                 MessageBox.Show("Impossibile connettersi a questo server: "+exception.Message);
 			}
-		}
-
-		private void UsaAggiornamenti(string data)
-		{
-			
 		}
 	}
 }
